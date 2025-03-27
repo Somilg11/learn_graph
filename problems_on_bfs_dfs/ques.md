@@ -462,3 +462,133 @@ public:
     }
 };
 ```
+## Find Eventual Safe State
+```
+class Solution {
+public:
+    bool dfs(int node, vector<vector<int>>& adj, vector<bool>& visit, vector<bool>& inStack) {
+        if (inStack[node]) return true;
+        if (visit[node]) return false;
+        visit[node] = true;
+        inStack[node] = true;
+        for (auto neighbor : adj[node]) {
+            if (dfs(neighbor, adj, visit, inStack)) {
+                return true;
+            }
+        }
+        inStack[node] = false;
+        return false;
+    }
+    vector<int> eventualSafeNodes(vector<vector<int>>& graph) {
+        int n = graph.size();
+        vector<bool> visit(n), inStack(n);
+        for (int i = 0; i < n; i++) {
+            dfs(i, graph, visit, inStack);
+        }
+        vector<int> safeNodes;
+        for (int i = 0; i < n; i++) {
+            if (!inStack[i]) {
+                safeNodes.push_back(i);
+            }
+        }
+        return safeNodes;
+    }
+};
+```
+## Topological Sort
+```
+class Solution {
+  private:
+    void dfs(int start, vector<int> &vis, stack<int> &st, vector<vector<int>> &adj){
+        vis[start]=1;
+        for(auto it: adj[start]){
+            if(!vis[it]){
+                dfs(it, vis, st, adj);
+            }
+        }
+        st.push(start);
+    }
+  public:
+    // Function to return list containing vertices in Topological order.
+    vector<int> topologicalSort(vector<vector<int>>& adj) {
+        // Your code here
+        int n = adj.size();
+        vector<int> vis(n,0);
+        stack<int> st;
+        for(int i=0;i<n;i++){
+            if(!vis[i]){
+                dfs(i, vis, st, adj);
+            }
+        }
+        vector<int> ans;
+        while(!st.empty()){
+            ans.push_back(st.top());
+            st.pop();
+        }
+        return ans;
+    }
+};
+```
+## Kahn's Algorithm
+```
+vector<int> indegree(n,0);
+for(int i=0;i<n;i++){
+    for(auto it: adj[i]){
+        indegree[it]++;
+    }
+}
+queue<int> q;
+for(int i=0;i<n;i++){
+    if(indegree[i]==0){
+        q.push(i);
+    }
+}
+vector<int> topo;
+    while(!q.empty()){
+        int node = q.front();
+        q.pop();
+        topo.push_back(node);
+        for(auto it: adj[node]){
+            indegree[it]--;
+            if(indegree[it]==0) q.push(it);
+        }
+    }
+return topo;
+```
+## Cycle Detection in Directed Graph BFS
+```
+class Solution {
+  public:
+    // Function to detect cycle in a directed graph.
+    bool isCyclic(vector<vector<int>> &adj) {
+        // code here
+        int n = adj.size();
+        vector<int> indegree(n,0);
+        for(int i=0;i<n;i++){
+            for(auto it: adj[i]){
+                indegree[it]++;
+            }
+        }
+        queue<int>q;
+        for(int i=0;i<n;i++){
+            if(indegree[i]==0){
+                q.push(i);
+            }
+        }
+        // vector<int> topo;
+        int cnt = 0;
+        while(!q.empty()){
+            int node = q.front();
+            q.pop();
+            cnt++;
+            // topo.push_back(node);
+            for(auto it: adj[node]){
+                indegree[it]--;
+                if(indegree[it]==0) q.push(it);
+            }
+        }
+        if(cnt == n) return false;
+        return true;
+    }
+};
+```
