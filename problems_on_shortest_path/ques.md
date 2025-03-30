@@ -219,3 +219,102 @@ public:
     }
 };
 ```
+## Dijkstra priority queue
+```
+class Solution {
+  public:
+    // Function to find the shortest distance of all the vertices
+    // from the source vertex src.
+    vector<int> dijkstra(vector<vector<pair<int, int>>> &adj, int src) {
+        int V = adj.size();
+        priority_queue<pair<int, int>, vector<pair<int, int>>, greater<pair<int, int>>> pq;
+        vector<int> dist(V, INT_MAX);
+        dist[src]=0;
+        pq.push({0,src});
+        while(!pq.empty()){
+            int dis = pq.top().first;
+            int node = pq.top().second;
+            pq.pop();
+            
+            for(auto it: adj[node]){
+                int v = it.first;
+                int w = it.second;
+                if(dis+w < dist[v]){
+                    dist[v] = dis+w;
+                    pq.push({dis+w,v});
+                }
+            }
+        }
+        return dist;
+    }
+};
+```
+```
+// using set
+vector<int> dijkstra(vector<vector<pair<int, int>>> &adj, int src) {
+        // Code here
+        int V = adj.size();
+        set<pair<int, int>> st;
+        vector<int> dist(V,INT_MAX);
+        st.insert({0,src});
+        dist[src]=0;
+        while(!st.empty()){
+            auto it = *(st.begin()); 
+            int node = it.second; 
+            int dis = it.first; 
+            st.erase(it);
+            
+            for(auto it: adj[node]){
+                int adjNode = it.first; 
+                int edgW = it.second;
+                if(dis + edgW < dist[adjNode]) {
+                    if(dist[adjNode] != 1e9) st.erase({dist[adjNode], adjNode});
+                    dist[adjNode] = dis + edgW; 
+                    st.insert({dist[adjNode], adjNode}); 
+                 }
+            }
+        }
+        return dist;
+    }
+```
+## Shortest path in Binary Matrix
+```
+class Solution {
+public:
+    int shortestPathBinaryMatrix(vector<vector<int>>& grid) {
+        int n=grid.size();
+        int m = grid[0].size();
+        if(grid[0][0]!=0 || grid[n-1][m-1]!=0){
+            return -1;
+        }
+         if(grid[0][0]==0 && n==1 && m==1){
+            return 1;
+        }
+        vector<vector<int>> dist(n,vector<int>(m,1e7));
+        dist[0][0]=0;
+        queue<pair<int,pair<int,int>>> q;
+        q.push({1,{0,0}});
+        vector<int> drow = {0,1,-1,0,1,-1,1,-1};
+        vector<int> dcol = {1,0,0,-1,1,1,-1,-1};
+        while(!q.empty()){
+            auto it = q.front();
+            q.pop();
+            int dis = it.first;
+            int row = it.second.first;
+            int col = it.second.second;
+            for(int i=0; i<8; i++){
+                int nrow = row+drow[i];
+                int ncol = col+dcol[i];
+                if(nrow>=0 && nrow<n && ncol>=0 && ncol<m && dis+1<dist[nrow][ncol] && grid[nrow][ncol]==0){
+                    dist[nrow][ncol] = dis+1;
+                    if(nrow == n-1 && ncol == m-1){
+                        return dis+1;
+                    }
+                    q.push({dis+1,{nrow,ncol}});
+                }
+            }
+        }
+        return -1;
+    }
+};
+```
