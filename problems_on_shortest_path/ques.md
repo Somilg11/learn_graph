@@ -455,3 +455,93 @@ public:
     }
 };
 ```
+## Bellman-Ford
+```
+vector<int> bellmanFord(int V, vector<vector<int>>& edges, int src) {
+        // Code here
+        vector<int> dist(V,1e8);
+        dist[src]=0;
+        for(int i=0;i<V-1;i++){
+            for(auto it: edges){
+                int u = it[0];
+                int v = it[1];
+                int wt = it[2];
+                if(dist[u] != 1e8 && dist[u]+wt < dist[v]){
+                    dist[v] = dist[u]+wt;
+                }
+            }
+        }
+        for(auto it: edges){
+                int u = it[0];
+                int v = it[1];
+                int wt = it[2];
+                if(dist[u] != 1e8 && dist[u]+wt < dist[v]) return {-1};
+            }
+        return dist;
+    }
+```
+## Floyd Warshall
+```
+class Solution {
+  public:
+    void shortestDistance(vector<vector<int>>& mat) {
+        // Code here
+        int n =mat.size();
+        for(int i=0;i<n;i++){
+            for(int j=0;j<n;j++){
+                if(mat[i][j]==-1)mat[i][j]=1e9;
+                if(i==j)mat[i][j]=0;
+            }
+        }
+        
+        for(int k=0;k<n;k++){
+            for(int i=0;i<n;i++){
+                for(int j=0;j<n;j++){
+                    mat[i][j] = min(mat[i][j], mat[i][k] + mat[k][j]);
+                }
+            }
+        }
+        
+        for(int i=0;i<n;i++){
+            for(int j=0;j<n;j++){
+                if(mat[i][j]==1e9)mat[i][j]=-1;
+            }
+        }
+    }
+};
+```
+## Find the City With the Smallest Number of Neighbors at a Threshold Distance
+```
+class Solution {
+public:
+    int findTheCity(int n, vector<vector<int>>& edges, int distanceThreshold) {
+        vector<vector<int>>dist(n, vector<int> (n,INT_MAX));
+        for(auto it:edges){
+            dist[it[0]][it[1]] = it[2];
+            dist[it[1]][it[0]] = it[2];
+        }
+        for(int i=0;i<n;i++) dist[i][i]=0;
+        for(int k=0;k<n;k++){
+            for(int i=0;i<n;i++){
+                for(int j=0;j<n;j++){
+                    if(dist[i][k] == INT_MAX || dist[k][j]==INT_MAX) continue;
+                    dist[i][j] = min(dist[i][j], dist[i][k]+dist[k][j]);
+                }
+            }
+        }
+        int cnt = n;
+        int cityno = -1;
+        for(int i=0;i<n;i++){
+            int count = 0;
+            for(int j=0;j<n;j++){
+                if(dist[i][j] <= distanceThreshold) count++;
+            }
+            if(count <= cnt){
+                cnt = count;
+                cityno = i;
+            }
+        }
+        return cityno;
+    }
+};
+```
