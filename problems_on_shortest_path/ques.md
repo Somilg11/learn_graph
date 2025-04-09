@@ -809,3 +809,102 @@ public:
     }
 };
 ```
+## Maximum connected groups
+```
+class DisjointSet {
+public:
+    vector<int> parent, size;
+
+    DisjointSet(int n) {
+        parent.resize(n);
+        size.resize(n, 1);
+        for(int i = 0; i < n; ++i) {
+            parent[i] = i;
+        }
+    }
+
+    int findUPar(int node) {
+        if(node == parent[node]) return node;
+        return parent[node] = findUPar(parent[node]);
+    }
+
+    void unionBySize(int u, int v) {
+        int ulp_u = findUPar(u);
+        int ulp_v = findUPar(v);
+        if(ulp_u == ulp_v) return;
+
+        if(size[ulp_u] < size[ulp_v]) {
+            parent[ulp_u] = ulp_v;
+            size[ulp_v] += size[ulp_u];
+        } else {
+            parent[ulp_v] = ulp_u;
+            size[ulp_u] += size[ulp_v];
+        }
+    }
+};
+
+class Solution {
+private:
+    bool isValid(int r, int c, int n) {
+        return r >= 0 && r < n && c >= 0 && c < n;
+    }
+
+public:
+    int largestIsland(vector<vector<int>>& grid) {
+        int n = grid.size();
+        DisjointSet ds(n * n);
+
+        // Step 1: Union all connected 1s
+        for(int row = 0; row < n; ++row) {
+            for(int col = 0; col < n; ++col) {
+                if(grid[row][col] == 0) continue;
+                int node = row * n + col;
+                int dr[] = {-1, 0, 1, 0};
+                int dc[] = {0, -1, 0, 1};
+
+                for(int i = 0; i < 4; ++i) {
+                    int newr = row + dr[i];
+                    int newc = col + dc[i];
+                    if(isValid(newr, newc, n) && grid[newr][newc] == 1) {
+                        int adjNode = newr * n + newc;
+                        ds.unionBySize(node, adjNode);
+                    }
+                }
+            }
+        }
+
+        // Step 2: Try converting each 0 to 1 and compute connected component size
+        int maxIsland = 0;
+        for(int row = 0; row < n; ++row) {
+            for(int col = 0; col < n; ++col) {
+                if(grid[row][col] == 1) continue;
+
+                int dr[] = {-1, 0, 1, 0};
+                int dc[] = {0, -1, 0, 1};
+                set<int> uniqueParents;
+                for(int i = 0; i < 4; ++i) {
+                    int newr = row + dr[i];
+                    int newc = col + dc[i];
+                    if(isValid(newr, newc, n) && grid[newr][newc] == 1) {
+                        int parent = ds.findUPar(newr * n + newc);
+                        uniqueParents.insert(parent);
+                    }
+                }
+
+                int newSize = 1; // For the converted 0
+                for(int parent : uniqueParents) {
+                    newSize += ds.size[parent];
+                }
+                maxIsland = max(maxIsland, newSize);
+            }
+        }
+
+        // Step 3: If the grid was all 1s already
+        for(int i = 0; i < n * n; ++i) {
+            maxIsland = max(maxIsland, ds.size[ds.findUPar(i)]);
+        }
+
+        return maxIsland;
+    }
+};
+```
