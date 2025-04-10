@@ -908,3 +908,108 @@ public:
     }
 };
 ```
+## Most stones removed with the same row-col
+```
+class DisjointSet{
+public:
+    vector<int> rank, parent;
+    DisjointSet(int n){
+        rank.resize(n+1,0);
+        parent.resize(n+1);
+        for(int i=0;i<=n;i++){
+            parent[i]=i;
+        }
+    }
+    int findUPar(int node){
+        if(node == parent[node]) return node;
+        return parent[node]=findUPar(parent[node]);
+    }
+    void unionBySize(int u, int v){
+        int ulp_u = findUPar(u);
+        int ulp_v = findUPar(v);
+        if(ulp_u == ulp_v) return;
+        if(rank[ulp_u] < rank[ulp_v]){
+            parent[ulp_u] = ulp_v;
+            rank[ulp_v] += rank[ulp_u];
+        } else {
+            parent[ulp_v] = ulp_u;
+            rank[ulp_u] += rank[ulp_v];
+        }
+    }
+};
+class Solution {
+public:
+    int removeStones(vector<vector<int>>& stones) {
+        int n =stones.size();
+        int maxRow = 0;
+        int maxCol = 0;
+        for(auto it: stones){
+            maxRow = max(maxRow, it[0]);
+            maxCol = max(maxCol, it[1]);
+        }
+        DisjointSet ds(maxRow + maxCol + 2);
+        unordered_map<int,int> stoneNode;
+        for(auto it: stones){
+            int nodeRow = it[0];
+            int nodeCol = it[1] + maxRow + 1;
+            ds.unionBySize(nodeRow, nodeCol);
+            stoneNode[nodeRow] = 1;
+            stoneNode[nodeCol] = 1;
+        }
+        int cnt = 0;
+        for(auto it: stoneNode){
+            if(ds.findUPar(it.first) == it.first) cnt++;
+        }
+        return n-cnt;
+    }
+};
+```
+## Strongly connected components - Kosaraju's algo
+```
+class Solution {
+  private:
+  void dfs(int node, vector<int> &vis, vector<vector<int>> &adj, stack<int> &st){
+      vis[node] = 1;
+      for(auto it: adj[node]){
+          if(!vis[it]) dfs(it, vis, adj, st);
+      }
+      st.push(node);
+  }
+  private:
+  void dfs3(int node, vector<int> &vis, vector<vector<int>> &adjT){
+      vis[node] = 1;
+      for(auto it: adjT[node]){
+          if(!vis[it]) dfs3(it, vis, adjT);
+      }   
+  }
+  public:
+    int kosaraju(vector<vector<int>> &adj) {
+        // code here
+        int n = adj.size();
+        vector<int> vis(n, 0);
+        stack<int> st;
+        for(int i=0;i<n;i++){
+            if(!vis[i]){
+                dfs(i, vis, adj, st);
+            }
+        }
+        vector<vector<int>> adjT(n);
+        for(int i=0;i<n;i++){
+            vis[i]=0;
+            for(auto it: adj[i]){
+                adjT[it].push_back(i);
+            }
+        }
+        int scc = 0;
+        while(!st.empty()){
+            int node = st.top();
+            st.pop();
+            if(!vis[node]){
+                scc++;
+                dfs3(node, vis, adjT);
+            }
+        }
+        return scc;
+    }
+};
+```
